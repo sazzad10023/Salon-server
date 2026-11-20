@@ -32,11 +32,11 @@ app.get('/',  (req, res) => {
 })
 
 
-//  app.get('/users',async (req,res)=>{
-//     const cursor = users.find({});
-//     const result =  await cursor .toArray();
-//     res.send (result);
-//  }) 
+ app.get('/users',async (req,res)=>{
+    const cursor = users.find({});
+    const result =  await cursor .toArray();
+    res.send (result);
+ }) 
 
 // // bookig add card 
 // app.post("/services", async (req, res) => {
