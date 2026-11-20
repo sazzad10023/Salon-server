@@ -39,17 +39,17 @@ app.get('/',  (req, res) => {
  }) 
 
 // // bookig add card 
-// app.post("/services", async (req, res) => {
-//   const service = {
-//     ...req.body,
-//     createdAt: new Date(),
-//     updatedAt: new Date(),
-//   };
+app.post("/services", async (req, res) => {
+  const service = {
+    ...req.body,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-//   const result = await services.insertOne(service);
+  const result = await services.insertOne(service);
 
-//   res.status(201).send(result);
-// });
+  res.status(201).send(result);
+});
 
 // app.get("/services", async (req, res) => {
 //   const cursor = services.find({});
