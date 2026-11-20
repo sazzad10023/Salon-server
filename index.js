@@ -51,12 +51,12 @@ app.post("/services", async (req, res) => {
   res.status(201).send(result);
 });
 
-// app.get("/services", async (req, res) => {
-//   const cursor = services.find({});
-//   const result = await cursor.toArray();
+app.get("/services", async (req, res) => {
+  const cursor = services.find({});
+  const result = await cursor.toArray();
 
-//   res.send(result);
-// });
+  res.send(result);
+});
 
 
 // // update 
