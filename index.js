@@ -488,73 +488,73 @@ app.get("/customer-stats", async (req, res) => {
 
 // transtion  
 
-// app.get("/transactions", async (req, res) => {
-//   try {
-//     // Get all transactions
-//     const transactionList = await transactions
-//       .find()
-//       .sort({ createdAt: -1 })
-//       .toArray();
+app.get("/transactions", async (req, res) => {
+  try {
+    // Get all transactions
+    const transactionList = await transactions
+      .find()
+      .sort({ createdAt: -1 })
+      .toArray();
 
-//     const result = [];
+    const result = [];
 
-//     // Get appointment and service information
-//     for (const transaction of transactionList) {
-//       const appointment = await appointments.findOne({
-//         _id: new ObjectId(transaction.appointmentId),
-//       });
+    // Get appointment and service information
+    for (const transaction of transactionList) {
+      const appointment = await appointments.findOne({
+        _id: new ObjectId(transaction.appointmentId),
+      });
 
-//       if (!appointment) continue;
+      if (!appointment) continue;
 
-//       const service = await services.findOne({
-//         _id: new ObjectId(appointment.serviceId),
-//       });
+      const service = await services.findOne({
+        _id: new ObjectId(appointment.serviceId),
+      });
 
-//       result.push({
-//         _id: transaction._id,
+      result.push({
+        _id: transaction._id,
 
-//         // Customer Information
-//         customer: appointment.customer,
+        // Customer Information
+        customer: appointment.customer,
 
-//         // Related Service
-//         service: service
-//           ? service.name
-//           : "Service not found",
+        // Related Service
+        service: service
+          ? service.name
+          : "Service not found",
 
-//         // Appointment Information
-//         appointmentDate: appointment.appointmentDate,
-//         timeSlot: appointment.timeSlot,
+        // Appointment Information
+        appointmentDate: appointment.appointmentDate,
+        timeSlot: appointment.timeSlot,
 
-//         // Payment Information
-//         amount: transaction.amount,
-//         currency: transaction.currency,
-//         paymentStatus: transaction.paymentStatus,
+        // Payment Information
+        amount: transaction.amount,
+        currency: transaction.currency,
+        paymentStatus: transaction.paymentStatus,
 
-//         // Stripe Information
-//         stripeSessionId:
-//           transaction.stripeSessionId ||
-//           appointment.paymentSessionId,
+        // Stripe Information
+        stripeSessionId:
+          transaction.stripeSessionId ||
+          appointment.paymentSessionId,
 
-//         // Transaction Date
-//         transactionDate: transaction.createdAt,
-//       });
-//     }
+        // Transaction Date
+        transactionDate: transaction.createdAt,
+      });
+    }
 
-//     res.status(200).send({
-//       success: true,
-//       total: result.length,
-//       data: result,
-//     });
+    res.status(200).send({
+      success: true,
+      total: result.length,
+      data: result,
+    });
 
-//   } catch (error) {
-//     console.error("Transaction Error:", error);
+  } catch (error) {
+    console.error("Transaction Error:", error);
 
-//     res.status(500).send({
-//       success: false,
-//       message: "Failed to fetch transactions",
-//     });
-//   }
-// });
+    res.status(500).send({
+      success: false,
+      message: "Failed to fetch transactions",
+    });
+  }
+});
 
 
 
