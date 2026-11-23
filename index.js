@@ -71,43 +71,43 @@ app.get("/users/:id", async (req, res) => {
   }
 });
 
-// Block User
-// app.patch("/users/:id/block", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { banReason } = req.body;
+Block User
+app.patch("/users/:id/block", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { banReason } = req.body;
 
-//     const result = await users.updateOne(
-//       { $or: [{ _id: id }, { id }] },
-//       {
-//         $set: {
-//           banned: true,
-//           banReason: banReason || "Blocked by admin",
-//           bannedAt: new Date(),
-//           updatedAt: new Date(),
-//         },
-//       }
-//     );
+    const result = await users.updateOne(
+      { $or: [{ _id: id }, { id }] },
+      {
+        $set: {
+          banned: true,
+          banReason: banReason || "Blocked by admin",
+          bannedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    );
 
-//     if (result.matchedCount === 0) {
-//       return res.status(404).send({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
+    if (result.matchedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found",
+      });
+    }
 
-//     res.send({
-//       success: true,
-//       message: "User blocked successfully",
-//     });
-//   } catch (error) {
-//     console.error("Block user error:", error);
-//     res.status(500).send({
-//       success: false,
-//       message: "Failed to block user",
-//     });
-//   }
-// });
+    res.send({
+      success: true,
+      message: "User blocked successfully",
+    });
+  } catch (error) {
+    console.error("Block user error:", error);
+    res.status(500).send({
+      success: false,
+      message: "Failed to block user",
+    });
+  }
+});
 
 // Unblock User
 // app.patch("/users/:id/unblock", async (req, res) => {
