@@ -80,23 +80,23 @@ export const verfiyToken = async (req, res, next) => {
   
 
 
-// export const verifyRole = (roles) => {
-//   return (req, res, next) => {
-//     console.log(req.user, "req.user from verifyRole middleware");
+export const verifyRole = (roles) => {
+  return (req, res, next) => {
+    console.log(req.user, "req.user from verifyRole middleware");
 
-//     // Authenticated user role from the token
-//     const role = req.user?.role;
+    // Authenticated user role from the token
+    const role = req.user?.role;
 
-//     if (roles.includes(role)) {
-//       next();
-//     } else {
-//       return res.status(403).send({
-//         message:
-//           "Forbidden: You do not have the required role to access this resource",
-//       });
-//     }
-//   };
-// };
+    if (roles.includes(role)) {
+      next();
+    } else {
+      return res.status(403).send({
+        message:
+          "Forbidden: You do not have the required role to access this resource",
+      });
+    }
+  };
+};
  app.get('/users',verfiyToken,async (req,res)=>{
     const cursor = users.find({});
     const result =  await cursor .toArray();
