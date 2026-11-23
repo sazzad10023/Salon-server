@@ -442,48 +442,48 @@ app.get("/api/admin/dashboard/stats", async (req, res) => {
 
 // customer over view 
 // Customer Dashboard Statistics
-// app.get("/customer-stats", async (req, res) => {
-//   try {
-//     const [
-//       totalAppointments,
-//       pendingAppointments,
-//       confirmedAppointments,
-//       cancelledAppointments,
-//     ] = await Promise.all([
-//       appointments.countDocuments({}),
+app.get("/customer-stats", async (req, res) => {
+  try {
+    const [
+      totalAppointments,
+      pendingAppointments,
+      confirmedAppointments,
+      cancelledAppointments,
+    ] = await Promise.all([
+      appointments.countDocuments({}),
 
-//       appointments.countDocuments({
-//         status: "Pending",
-//       }),
+      appointments.countDocuments({
+        status: "Pending",
+      }),
 
-//       appointments.countDocuments({
-//         status: "Confirmed",
-//       }),
+      appointments.countDocuments({
+        status: "Confirmed",
+      }),
 
-//       appointments.countDocuments({
-//         status: "Cancelled",
-//       }),
-//     ]);
+      appointments.countDocuments({
+        status: "Cancelled",
+      }),
+    ]);
 
-//     res.status(200).send({
-//       success: true,
-//       message: "Dashboard statistics fetched successfully",
-//       data: {
-//         totalAppointments,
-//         pendingAppointments,
-//         confirmedAppointments,
-//         cancelledAppointments,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Customer Dashboard Error:", error);
+    res.status(200).send({
+      success: true,
+      message: "Dashboard statistics fetched successfully",
+      data: {
+        totalAppointments,
+        pendingAppointments,
+        confirmedAppointments,
+        cancelledAppointments,
+      },
+    });
+  } catch (error) {
+    console.error("Customer Dashboard Error:", error);
 
-//     res.status(500).send({
-//       success: false,
-//       message: "Failed to fetch dashboard statistics",
-//     });
-//   }
-// });
+    res.status(500).send({
+      success: false,
+      message: "Failed to fetch dashboard statistics",
+    });
+  }
+});
 
 
 // transtion  
