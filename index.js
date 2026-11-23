@@ -559,30 +559,30 @@ app.get("/transactions", async (req, res) => {
 
 
 // feature service 
-// app.get("/featured-services", async (req, res) => {
-//   try {
-//     const featuredServices = await services
-//       .find({
-//         status: { $regex: /^active$/i },
-//       })
-//       .sort({ createdAt: -1 })
-//       .limit(6)
-//       .toArray();
+app.get("/featured-services", async (req, res) => {
+  try {
+    const featuredServices = await services
+      .find({
+        status: { $regex: /^active$/i },
+      })
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .toArray();
 
-//     res.status(200).json({
-//       success: true,
-//       message: "Active services fetched successfully",
-//       data: featuredServices,
-//     });
-//   } catch (error) {
-//     console.error(error);
+    res.status(200).json({
+      success: true,
+      message: "Active services fetched successfully",
+      data: featuredServices,
+    });
+  } catch (error) {
+    console.error(error);
 
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch active services",
-//     });
-//   }
-// });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch active services",
+    });
+  }
+});
 app.listen(port, () => {
   console.log(`running succesfully ${port}`)
 })
