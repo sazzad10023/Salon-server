@@ -360,85 +360,85 @@ app.patch("/appointments/:id", async (req, res) => {
 
 // admin dashboard 
 // Admin Dashboard Statistics
-// app.get("/api/admin/dashboard/stats", async (req, res) => {
-//   try {
-//     const [
-//       totalCustomers,
-//       totalActiveServices,
-//       totalAppointments,
-//       pendingAppointments,
-//       confirmedAppointments,
-//       paymentTotals,
-//     ] = await Promise.all([
-//       // Total registered customers
-//       users.countDocuments({
-//         role: "customer",
-//       }),
+app.get("/api/admin/dashboard/stats", async (req, res) => {
+  try {
+    const [
+      totalCustomers,
+      totalActiveServices,
+      totalAppointments,
+      pendingAppointments,
+      confirmedAppointments,
+      paymentTotals,
+    ] = await Promise.all([
+      // Total registered customers
+      users.countDocuments({
+        role: "customer",
+      }),
 
-//       // Total active services
-//       services.countDocuments({
-//         status: "Active",
-//       }),
+      // Total active services
+      services.countDocuments({
+        status: "Active",
+      }),
 
-//       // Total appointment requests
-//       appointments.countDocuments({}),
+      // Total appointment requests
+      appointments.countDocuments({}),
 
-//       // Pending appointments
-//       appointments.countDocuments({
-//         status: "Pending",
-//       }),
+      // Pending appointments
+      appointments.countDocuments({
+        status: "Pending",
+      }),
 
-//       // Confirmed appointments
-//       appointments.countDocuments({
-//         status: "Confirmed",
-//       }),
+      // Confirmed appointments
+      appointments.countDocuments({
+        status: "Confirmed",
+      }),
 
-//       // Total successful payments
-//       transactions.aggregate([
-//         {
-//           $match: {
-//             paymentStatus: "paid",
-//           },
-//         },
-//         {
-//           $group: {
-//             _id: "$currency",
-//             totalAmount: {
-//               $sum: "$amount",
-//             },
-//           },
-//         },
-//         {
-//           $project: {
-//             _id: 0,
-//             currency: "$_id",
-//             amount: "$totalAmount",
-//           },
-//         },
-//       ]).toArray(),
-//     ]);
+      // Total successful payments
+      transactions.aggregate([
+        {
+          $match: {
+            paymentStatus: "paid",
+          },
+        },
+        {
+          $group: {
+            _id: "$currency",
+            totalAmount: {
+              $sum: "$amount",
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            currency: "$_id",
+            amount: "$totalAmount",
+          },
+        },
+      ]).toArray(),
+    ]);
 
-//     res.status(200).send({
-//       success: true,
-//       message: "Dashboard statistics fetched successfully",
-//       data: {
-//         totalCustomers,
-//         totalActiveServices,
-//         totalAppointments,
-//         pendingAppointments,
-//         confirmedAppointments,
-//         totalSuccessfulPayments: paymentTotals,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Dashboard statistics error:", error);
+    res.status(200).send({
+      success: true,
+      message: "Dashboard statistics fetched successfully",
+      data: {
+        totalCustomers,
+        totalActiveServices,
+        totalAppointments,
+        pendingAppointments,
+        confirmedAppointments,
+        totalSuccessfulPayments: paymentTotals,
+      },
+    });
+  } catch (error) {
+    console.error("Dashboard statistics error:", error);
 
-//     res.status(500).send({
-//       success: false,
-//       message: "Failed to fetch dashboard statistics",
-//     });
-//   }
-// });
+    res.status(500).send({
+      success: false,
+      message: "Failed to fetch dashboard statistics",
+    });
+  }
+});
 
 // customer over view 
 // Customer Dashboard Statistics
