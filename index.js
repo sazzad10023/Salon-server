@@ -17,7 +17,7 @@ const client = new MongoClient(process.env.MONGODB_URL);
 
 export async function connectToMongoDB() {
   try {
-    await client.connect();
+    // await client.connect();
     console.log("You successfully connected to MongoDB!");
     return client;
   } catch (err) {
@@ -650,3 +650,5 @@ app.get("/featured-services", async (req, res) => {
 app.listen(port, () => {
   console.log(`running succesfully ${port}`)
 })
+
+export default app;
