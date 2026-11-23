@@ -8,7 +8,10 @@ app.use(express.json({ limit: "10mb" }));
 //  app.use(express.json());
  app.use(cors());
 
-
+// const myLogger = (req, res, next) => {
+//     console.log('now hitting api', req.url, req.headers)
+//     next();
+// }
 
 const client = new MongoClient(process.env.MONGODB_URL);
 
@@ -28,13 +31,73 @@ export async function connectToMongoDB() {
 const services = database.collection("services");
 const appointments = database.collection("appointments");
 const transactions = database.collection("transactions");
+// const sessions = database.collection("session");
+
 
 app.get('/',  (req, res) => {
   res.send(' run the server ')
 })
 
 
- app.get('/users',async (req,res)=>{
+
+export const verfiyToken = async (req, res, next) => {
+  const {token} = req.headers.authorization;
+  
+
+  if (!token) {
+    return res.status(401).send({
+      message: "Unauthorized: No token provided",
+    });
+  }
+
+  const parseToken = token.split(" ")[1];
+
+  try {
+    const JWKS = createRemoteJWKSet(
+      new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
+    );
+
+    const { payload } = await jwtVerify(parseToken, JWKS, {
+      issuer: process.env.CLIENT_URL,
+      audience: process.env.CLIENT_URL,
+    });
+
+    req.user = {
+      name: payload.name,
+      email: payload.email,
+      role: payload.role,
+      branch: payload.branch || null,
+      id: payload.id,
+    };
+  } catch (e) {
+    return res.status(401).send({
+      message: "Unauthorized: Invalid token",
+    });
+  }
+
+  next();
+};
+  
+
+
+// export const verifyRole = (roles) => {
+//   return (req, res, next) => {
+//     console.log(req.user, "req.user from verifyRole middleware");
+
+//     // Authenticated user role from the token
+//     const role = req.user?.role;
+
+//     if (roles.includes(role)) {
+//       next();
+//     } else {
+//       return res.status(403).send({
+//         message:
+//           "Forbidden: You do not have the required role to access this resource",
+//       });
+//     }
+//   };
+// };
+ app.get('/users',verfiyToken,async (req,res)=>{
     const cursor = users.find({});
     const result =  await cursor .toArray();
     res.send (result);
@@ -150,7 +213,7 @@ app.patch("/users/:id/unblock", async (req, res) => {
 
 
 // // bookig add card 
-app.post("/services", async (req, res) => {
+app.post("/services" ,async (req, res) => {
   const service = {
     ...req.body,
     createdAt: new Date(),
@@ -163,8 +226,8 @@ app.post("/services", async (req, res) => {
 });
 
 
-app.get("/services", async (req, res) => {
-    console.log("Authorization:", req.headers.authorization);
+app.get("/services",async (req, res) => {
+    
 
   const cursor = services.find({});
   const result = await cursor.toArray();
@@ -193,6 +256,7 @@ app.patch("/services/:id", async (req, res) => {
   if (duration !== undefined) updateData.duration = Number(duration);
   if (image !== undefined) updateData.image = image;
   if (status !== undefined) updateData.status = status;
+  
 
   if (Object.keys(updateData).length === 0) {
     return res.status(400).send({ message: "No data provided to update" });
@@ -274,7 +338,7 @@ app.post("/appointments", async (req, res) => {
 //     });
 //   }
 // });
-app.get("/appointments", async (req, res) => {
+app.get("/appointments",  async (req, res) => {
   try {
     const cursor = appointments.find({}).sort({ createdAt: -1 });
     const result = await cursor.toArray();
