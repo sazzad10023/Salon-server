@@ -2,6 +2,7 @@ import express from "express"
 import 'dotenv/config'
 import cors from 'cors'
 import { MongoClient, ObjectId } from "mongodb";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 const app = express()
 const port = 8000
 app.use(express.json({ limit: "10mb" }));
@@ -41,7 +42,8 @@ app.get('/',  (req, res) => {
 
 
 export const verfiyToken = async (req, res, next) => {
-  const {token} = req.headers.authorization;
+  const token = req.headers.authorization;
+  // console.log( token)
   
 
   if (!token) {
@@ -61,6 +63,7 @@ export const verfiyToken = async (req, res, next) => {
       issuer: process.env.CLIENT_URL,
       audience: process.env.CLIENT_URL,
     });
+    console.log(payload)
 
     req.user = {
       name: payload.name,
@@ -70,6 +73,7 @@ export const verfiyToken = async (req, res, next) => {
       id: payload.id,
     };
   } catch (e) {
+    console.log(e)
     return res.status(401).send({
       message: "Unauthorized: Invalid token",
     });
@@ -86,7 +90,7 @@ export const verifyRole = (roles) => {
 
     // Authenticated user role from the token
     const role = req.user?.role;
-
+    console.log(role)
     if (roles.includes(role)) {
       next();
     } else {
@@ -97,11 +101,12 @@ export const verifyRole = (roles) => {
     }
   };
 };
- app.get('/users',verfiyToken,async (req,res)=>{
+ app.get('/users',verfiyToken,verifyRole(["admin"]),async (req,res)=>{
     const cursor = users.find({});
     const result =  await cursor .toArray();
     res.send (result);
  }) 
+
 
  // customer detalils
 
@@ -135,82 +140,176 @@ app.get("/users/:id", async (req, res) => {
 });
 
 // Block User
-app.patch("/users/:id/block", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { banReason } = req.body;
+// app.patch("/users/:id/block",verfiyToken,verifyRole(["admin"]), async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { banReason } = req.body;
 
-    const result = await users.updateOne(
-      { $or: [{ _id: id }, { id }] },
-      {
-        $set: {
-          banned: true,
-          banReason: banReason || "Blocked by admin",
-          bannedAt: new Date(),
-          updatedAt: new Date(),
-        },
+//     const result = await users.updateOne(
+//       { $or: [{ _id: id }, { id }] },
+//       {
+//         $set: {
+//           banned: true,
+//           banReason: banReason || "Blocked by admin",
+//           bannedAt: new Date(),
+//           updatedAt: new Date(),
+//         },
+//       }
+//     );
+
+//     if (result.matchedCount === 0) {
+//       return res.status(404).send({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     res.send({
+//       success: true,
+//       message: "User blocked successfully",
+//     });
+//   } catch (error) {
+//     console.error("Block user error:", error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Failed to block user",
+//     });
+//   }
+// });
+app.patch("/users/:id/block",verfiyToken,verifyRole(["admin"]),async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { banReason } = req.body;
+
+      // Validate MongoDB ObjectId
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid user ID",
+        });
       }
-    );
 
-    if (result.matchedCount === 0) {
-      return res.status(404).send({
+      const result = await users.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            banned: true,
+            banReason: banReason || "Blocked by admin",
+            bannedAt: new Date(),
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).send({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      return res.send({
+        success: true,
+        message: "User blocked successfully",
+      });
+    } catch (error) {
+      console.error("Block user error:", error);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+
+      return res.status(500).send({
         success: false,
-        message: "User not found",
+        message: "Failed to block user",
       });
     }
-
-    res.send({
-      success: true,
-      message: "User blocked successfully",
-    });
-  } catch (error) {
-    console.error("Block user error:", error);
-    res.status(500).send({
-      success: false,
-      message: "Failed to block user",
-    });
   }
-});
+);
 
 // Unblock User
-app.patch("/users/:id/unblock", async (req, res) => {
-  try {
-    const { id } = req.params;
+// app.patch("/users/:id/unblock", verfiyToken,verifyRole(["admin"]),async (req, res) => {
+//   try {
+//     const { id } = req.params;
 
-    const result = await users.updateOne(
-      { $or: [{ _id: id }, { id }] },
-      {
-        $set: {
-          banned: false,
-          updatedAt: new Date(),
-        },
-        $unset: {
-          banReason: "",
-          bannedAt: "",
-        },
+//     const result = await users.updateOne(
+//       { $or: [{ _id: id }, { id }] },
+//       {
+//         $set: {
+//           banned: false,
+//           updatedAt: new Date(),
+//         },
+//         $unset: {
+//           banReason: "",
+//           bannedAt: "",
+//         },
+//       }
+//     );
+
+//     if (result.matchedCount === 0) {
+//       return res.status(404).send({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     res.send({
+//       success: true,
+//       message: "User unblocked successfully",
+//     });
+//   } catch (error) {
+//     console.error("Unblock user error:", error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Failed to unblock user",
+//     });
+//   }
+// });
+app.patch("/users/:id/unblock",verfiyToken,verifyRole(["admin"]),async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid user ID",
+        });
       }
-    );
 
-    if (result.matchedCount === 0) {
-      return res.status(404).send({
+      const result = await users.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            banned: false,
+            updatedAt: new Date(),
+          },
+          $unset: {
+            banReason: "",
+            bannedAt: "",
+          },
+        }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).send({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      return res.send({
+        success: true,
+        message: "User unblocked successfully",
+      });
+    } catch (error) {
+      console.error("Unblock user error:", error);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+
+      return res.status(500).send({
         success: false,
-        message: "User not found",
+        message: "Failed to unblock user",
       });
     }
-
-    res.send({
-      success: true,
-      message: "User unblocked successfully",
-    });
-  } catch (error) {
-    console.error("Unblock user error:", error);
-    res.status(500).send({
-      success: false,
-      message: "Failed to unblock user",
-    });
   }
-});
-
+);
 
 // // bookig add card 
 app.post("/services" ,async (req, res) => {
@@ -338,7 +437,7 @@ app.post("/appointments", async (req, res) => {
 //     });
 //   }
 // });
-app.get("/appointments",  async (req, res) => {
+app.get("/appointments", async (req, res) => {
   try {
     const cursor = appointments.find({}).sort({ createdAt: -1 });
     const result = await cursor.toArray();
@@ -424,7 +523,7 @@ app.patch("/appointments/:id", async (req, res) => {
 
 // admin dashboard 
 // Admin Dashboard Statistics
-app.get("/api/admin/dashboard/stats", async (req, res) => {
+app.get("/admin/dashboard", verfiyToken,verifyRole((["admin"])),async (req, res) => {
   try {
     const [
       totalCustomers,
@@ -434,30 +533,27 @@ app.get("/api/admin/dashboard/stats", async (req, res) => {
       confirmedAppointments,
       paymentTotals,
     ] = await Promise.all([
-      // Total registered customers
+     
       users.countDocuments({
         role: "customer",
       }),
 
-      // Total active services
       services.countDocuments({
         status: "Active",
       }),
 
-      // Total appointment requests
+   
       appointments.countDocuments({}),
 
-      // Pending appointments
       appointments.countDocuments({
         status: "Pending",
       }),
 
-      // Confirmed appointments
+      
       appointments.countDocuments({
         status: "Confirmed",
       }),
 
-      // Total successful payments
       transactions.aggregate([
         {
           $match: {
@@ -506,7 +602,7 @@ app.get("/api/admin/dashboard/stats", async (req, res) => {
 
 // customer over view 
 // Customer Dashboard Statistics
-app.get("/customer-stats", async (req, res) => {
+app.get("/customer-stats",verfiyToken,verifyRole(["customer"]), async (req, res) => {
   try {
     const [
       totalAppointments,
@@ -552,17 +648,14 @@ app.get("/customer-stats", async (req, res) => {
 
 // transtion  
 
-app.get("/transactions", async (req, res) => {
+app.get("/transactions",verfiyToken,verifyRole(["admin"]), async (req, res) => {
   try {
-    // Get all transactions
     const transactionList = await transactions
       .find()
       .sort({ createdAt: -1 })
       .toArray();
 
     const result = [];
-
-    // Get appointment and service information
     for (const transaction of transactionList) {
       const appointment = await appointments.findOne({
         _id: new ObjectId(transaction.appointmentId),
@@ -577,29 +670,26 @@ app.get("/transactions", async (req, res) => {
       result.push({
         _id: transaction._id,
 
-        // Customer Information
+     
         customer: appointment.customer,
 
-        // Related Service
+       
         service: service
           ? service.name
           : "Service not found",
 
-        // Appointment Information
         appointmentDate: appointment.appointmentDate,
         timeSlot: appointment.timeSlot,
 
-        // Payment Information
         amount: transaction.amount,
         currency: transaction.currency,
         paymentStatus: transaction.paymentStatus,
 
-        // Stripe Information
+   
         stripeSessionId:
           transaction.stripeSessionId ||
           appointment.paymentSessionId,
 
-        // Transaction Date
         transactionDate: transaction.createdAt,
       });
     }
